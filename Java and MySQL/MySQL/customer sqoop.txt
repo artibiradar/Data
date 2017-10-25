@@ -1,0 +1,80 @@
+Import data into hive managed tables
+First create a database college in hive
+hive> create database college;
+hive> quit;
+sqoop import --connect jdbc:mysql://localhost/college --username  root
+--password '' --table student_master --hive-import --hive-table
+niit.student_profile -m 1;
+
+sqoop import --connect jdbc:mysql://localhost/college --username  root
+--password '' --table fy --hive-import --hive-table college.fyresults
+-m 1;
+
+sqoop import --connect jdbc:mysql://localhost/college --username  root
+--password '' --table student_master --columns "student_id,name"
+--hive-import --hive-table niit.student1 -m 1;
+
+sqoop import --connect jdbc:mysql://localhost/college --username  root
+--password '' --table student_master --where "student_id = 1 or
+student_id=3" --hive-import --hive-table college.student2 -m 1;
+
+sqoop import --connect jdbc:mysql://localhost/college --username root
+--password '' --query 'select a.student_id, a.name, a.address,
+b.result from student_master a, fy b where $CONDITIONS and
+a.student_id=b.student_id' --hive-import --hive-table niit.studentjoin
+--target-dir /niit/query20 -m 1;
+
+sqoop export command
+nano /home/hduser/employee.txt
+1201,satish,delhi
+1202,krishna,mumbai
+1203,amith,pune
+1204,javed,chennai
+1205,prudvi,bangalore
+hadoop fs -put employee.txt /niit
+
+
+
+
+nano /home/hduser/emp1.txt
+1201,satish1,delhi
+1202,krishna1,mumbai
+1206,sanjay,pune
+1207,rajiv,chennai
+1208,vijay,bangalore
+
+hadoop fs -put emp1.txt /niit
+
+In MySQl
+use college;
+
+CREATE TABLE employee_master(
+   employee_id INT NOT NULL AUTO_INCREMENT,
+   name VARCHAR(40) NOT NULL,
+   address VARCHAR(40) NOT NULL,
+   PRIMARY KEY ( employee_id ));
+
+
+sqoop export --connect jdbc:mysql://localhost/college --username root
+--password '' --table employee_master --update-mode  allowinsert
+--update-key employee_id   --export-dir /niit/employee.txt
+--input-fields-terminated-by ',' ;
+
+sqoop export --connect jdbc:mysql://localhost/employee --username root
+--password '' --table employee_master --update-mode  allowinsert
+--update-key employee_id   --export-dir /niit/emp1.txt
+--input-fields-terminated-by ',' ;
+
+CREATE TABLE customer(
+   customer_id VARCHAR(20) NOT NULL,
+   firstname VARCHAR(40) NOT NULL,
+      lastname VARCHAR(40) NOT NULL,
+   age int NOT NULL,
+profession VARCHAR(40) NOT NULL,
+   PRIMARY KEY ( customer_id ));
+
+
+sqoop export --connect jdbc:mysql://localhost/college --username root
+--password '' --table customer --update-mode  allowinsert --update-key
+customer_id   --export-dir /user/training --input-fields-terminated-by
+',' ;

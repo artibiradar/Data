@@ -1,0 +1,112 @@
+A. create database
+------------------
+create database retail;
+
+--this creates a folder by the name of retail.db under /user/hive/warehouse
+
+A1. show all the databases in hive
+----------------------------------
+show databases;
+
+B. Select a database
+--------------------
+use retail;
+
+B1. Show tables under the database
+----------------------------------
+show tables;
+
+
+C1. Create transaction table
+-------------------------------
+create table txnrecords(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+category STRING, product STRING, city STRING, state STRING, spendby STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+C2. Create customer table
+-------------------------------
+create table customer(custno INT, firstname STRING, lastname STRING,
+age INT, profession STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+
+D1. Load the data into the table (from local file system)
+-----------------------------------------------------
+LOAD DATA LOCAL INPATH '/home/hduser/txns1.txt' OVERWRITE INTO TABLE txnrecords;
+
+LOAD DATA LOCAL INPATH '/home/hduser/custs' OVERWRITE INTO TABLE customer;
+
+
+
+
+students.csv
+------------
+Amit,Maths,91
+Amit,Physics,48
+Amit,Chemistry,66
+Sanjay,Maths,96
+Sanjay,Physics,64
+Sanjay,Chemistry,73
+
+Create a Hive table stored as textfile
+
+CREATE TABLE csv_table (
+student_name string,
+subject string,
+marks INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+--2. Load csv_table with student.csv data
+LOAD DATA LOCAL INPATH "/home/hduser/students.csv" OVERWRITE INTO
+TABLE csv_table;
+
+--3. Create another Hive table using AvroSerDe
+CREATE TABLE avro_table
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES (
+    'avro.schema.literal'='{
+      "namespace": "abc",
+      "name": "student_marks",
+      "type": "record",
+      "fields": [ { "name":"student_name","type":"string"}, {
+"name":"subject","type":"string"}, { "name":"marks","type":"int"}]
+    }');
+
+--4. Load avro_table with data from csv_tabl
+INSERT OVERWRITE TABLE avro_table SELECT student_name, subject, marks
+FROM csv_table;
+
+--Now you can get data in Avro format from Hive warehouse folder. To
+dump this file to local file system use below command:
+
+---5 Create and Load data in ORC format
+
+CREATE TABLE orc_table (
+student_name string,
+subject string,
+marks INT)
+STORED AS ORC;
+
+INSERT OVERWRITE TABLE orc_table SELECT student_name, subject, marks
+FROM csv_table;
+
+
+6. Create a sequence File format and load data from another table
+------------------------------------------------------------------
+CREATE TABLE seq_table (
+student_name string,
+subject string,
+marks INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS SEQUENCEFILE;
+
+INSERT OVERWRITE TABLE seq_table SELECT student_name, subject, marks
+FROM csv_table;

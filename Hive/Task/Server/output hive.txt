@@ -1,0 +1,4 @@
+1.cerete database server;
+show databases;
+use server;
+create table server(

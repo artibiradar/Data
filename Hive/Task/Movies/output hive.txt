@@ -1,0 +1,14 @@
+create database movie;
+show databases;
+use movie;
+create table movie(id INT,name STRING,release DOUBLE,rating INT,duration STRING)
+row-----
+desc movie;
+load data inpath '/home/local/movie.csv overwrite into table movie'
+select * from movie;
+
+1.select count(*)from movie WHERE release BETWEEN 1945 AND 1959;
+2.select count(*)from movie WHERE rating>3.9;
+3.select count(*)from movie WHERE duration>5400;
+4.select release count(*)as total from movie group by release order by total;
+5.select count(*)from movie;
